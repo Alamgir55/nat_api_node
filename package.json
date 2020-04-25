@@ -4,8 +4,9 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start:dev": "nodemon server.js",
-    "start:prod": "SET NODE_ENV=production & nodemon server.js"
+    "start": "nodemon server.js",
+    "start:prod": "SET NODE_ENV=production & nodemon server.js",
+    "lint": "eslint --fix --ext .js"
   },
   "repository": {
     "type": "git",
@@ -20,6 +21,7 @@
   "dependencies": {
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "mongoose": "^5.9.10",
     "morgan": "^1.10.0"
   },
   "devDependencies": {
