@@ -1,10 +1,11 @@
-const JWT = require('jsonwebtoken');
+const { promisify } = require('util');
+const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
 const signToken = (id) => {
-  return JWT.sign({ id: id }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
@@ -15,6 +16,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     email: req.body.email,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
+    passwordChangedAt: req.body.passwordChangedAt,
   });
 
   const token = signToken(newUser._id);
@@ -54,7 +56,6 @@ exports.protect = catchAsync(async (req, res, next) => {
   ) {
     token = req.headers.authorization.split(' ')[1];
   }
-  console.log(token);
 
   if (!token) {
     return next(
@@ -62,5 +63,21 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
   }
 
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  //console.log(decoded);
+
+  const currentUser = await User.findById(decoded.id);
+  if (!currentUser) {
+    return next(
+      new AppError('The user belonging to this toke does no longer exits', 401),
+    );
+  }
+  if (currentUser.changePasswordAfter(decoded.iat)) {
+    return next(
+      new AppError('User recently changed password! Please log in again,', 401),
+    );
+  }
+
+  req.user = currentUser;
   next();
 });
