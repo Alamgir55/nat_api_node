@@ -104,6 +104,7 @@ tourSchema.pre('save', function (next) {
 // });
 
 // Query Middleware
+// tourSchema.pre('find', function(next)
 tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
   this.start = Date.now();
@@ -115,6 +116,7 @@ tourSchema.post(/^find/, function (docs, next) {
   next();
 });
 
+// AGGREGATION MIDDLEWARE
 tourSchema.pre('aggregate', function (next) {
   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
 
