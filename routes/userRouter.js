@@ -25,7 +25,7 @@ router
   .get(userController.getAllUsers)
   .post(userController.createUsers);
 router
-  .route('/:user')
+  .route('/:id')
   .get(userController.getUser)
   .patch(userController.updateUser)
   .delete(userController.deleteUser);
