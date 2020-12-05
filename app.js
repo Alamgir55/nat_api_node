@@ -6,6 +6,8 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+//const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -19,6 +21,12 @@ const app = express();
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
+// app.use(
+//   cors({
+//     origin: '127.0.0.1:3000',
+//     credentials: true,
+//   }),
+// );
 // Serving static files
 app.use(express.static(path.join(__dirname, 'public')));
 // GLOBAL MIDDLEWARES
@@ -29,8 +37,10 @@ app.use(
       defaultSrc: ["'self'", 'data:', 'blob:'],
       baseUri: ["'self'"],
       fontSrc: ["'self'", 'https:', 'data:'],
-      // scriptSrc: ["'self'", 'https://*.cloudflare.com'],
+      //scriptSrc: ["'self'", 'https://*.cloudflare.com'],
+      //scriptSrc: ["'self'", 'https://*.cdn.jsdelivr.net'],
       // scriptSrc: ["'self'", 'https://*.stripe.com'],
+      // eslint-disable-next-line no-dupe-keys
       scriptSrc: ["'self'", 'https://*.mapbox.com'],
       frameSrc: ["'self'", 'https://*.stripe.com'],
       objectSrc: ["'none'"],
@@ -56,6 +66,7 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: '10kb' }));
+app.use(cookieParser());
 // Data sanitiztion against NoSQL query injection
 app.use(mongoSanitize());
 // Data sanitiztion against XSS
@@ -77,7 +88,7 @@ app.use(
 // Test middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
-  // console.log(req.headers);
+  console.log(req.cookies);
   next();
 });
 // ROUTES
