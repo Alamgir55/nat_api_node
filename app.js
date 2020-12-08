@@ -3,10 +3,11 @@ const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
+const csp = require('express-csp');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
-//const cors = require('cors');
+const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
 const AppError = require('./utils/appError');
@@ -21,38 +22,106 @@ const app = express();
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
-// app.use(
-//   cors({
-//     origin: '127.0.0.1:3000',
-//     credentials: true,
-//   }),
-// );
+app.use(
+  cors({
+    origin: '127.0.0.1:3000',
+    credentials: true,
+  }),
+);
 // Serving static files
 app.use(express.static(path.join(__dirname, 'public')));
 // GLOBAL MIDDLEWARES
+
 // Security HTTP headers
-app.use(
-  helmet.contentSecurityPolicy({
+// app.use(
+//   helmet.contentSecurityPolicy({
+//     directives: {
+//       defaultSrc: ["'self'", 'data:', 'blob:'],
+//       baseUri: ["'self'"],
+//       fontSrc: ["'self'", 'https:', 'data:'],
+//       //scriptSrc: ["'self'", 'https://*.cloudflare.com'],
+//       //scriptSrc: ["'self'", 'https://*.cdn.jsdelivr.net'],
+//       // scriptSrc: ["'self'", 'https://*.stripe.com'],
+//       scriptSrc: ["'self'", 'https://*.mapbox.com'],
+//       frameSrc: ["'self'", 'https://*.stripe.com'],
+//       objectSrc: ["'none'"],
+//       styleSrc: ["'self'", 'https:', "'unsafe-inline'"],
+//       workerSrc: ["'self'", 'data:', 'blob:'],
+//       childSrc: ["'self'", 'blob:'],
+//       imgSrc: ["'self'", 'data:', 'blob:'],
+//       connectSrc: ["'self'", 'blob:', 'https://*.mapbox.com'],
+//       upgradeInsecureRequests: [],
+//     },
+//   }),
+// );
+//app.use(helmet({ contentSecurityPolicy: false }));
+app.use(helmet());
+csp.extend(app, {
+  policy: {
     directives: {
-      defaultSrc: ["'self'", 'data:', 'blob:'],
-      baseUri: ["'self'"],
-      fontSrc: ["'self'", 'https:', 'data:'],
-      //scriptSrc: ["'self'", 'https://*.cloudflare.com'],
-      //scriptSrc: ["'self'", 'https://*.cdn.jsdelivr.net'],
-      // scriptSrc: ["'self'", 'https://*.stripe.com'],
-      // eslint-disable-next-line no-dupe-keys
-      scriptSrc: ["'self'", 'https://*.mapbox.com'],
-      frameSrc: ["'self'", 'https://*.stripe.com'],
-      objectSrc: ["'none'"],
-      styleSrc: ["'self'", 'https:', "'unsafe-inline'"],
-      workerSrc: ["'self'", 'data:', 'blob:'],
-      childSrc: ["'self'", 'blob:'],
-      imgSrc: ["'self'", 'data:', 'blob:'],
-      connectSrc: ["'self'", 'blob:', 'https://*.mapbox.com'],
-      upgradeInsecureRequests: [],
+      'default-src': ['self'],
+      'style-src': ['self', 'unsafe-inline', 'https:'],
+      'font-src': ['self', 'https://fonts.gstatic.com'],
+      'script-src': [
+        'self',
+        'unsafe-inline',
+        'data',
+        'blob',
+        'https://js.stripe.com',
+        'https://*.mapbox.com',
+        'https://*.cloudflare.com/',
+        'https://bundle.js:8828',
+        'ws://localhost:56558/',
+      ],
+      'worker-src': [
+        'self',
+        'unsafe-inline',
+        'data:',
+        'blob:',
+        'https://*.stripe.com',
+        'https://*.mapbox.com',
+        'https://*.cloudflare.com/',
+        'https://bundle.js:*',
+        'ws://localhost:*/',
+      ],
+      'frame-src': [
+        'self',
+        'unsafe-inline',
+        'data:',
+        'blob:',
+        'https://*.stripe.com',
+        'https://*.mapbox.com',
+        'https://*.cloudflare.com/',
+        'https://bundle.js:*',
+        'ws://localhost:*/',
+      ],
+      'img-src': [
+        'self',
+        'unsafe-inline',
+        'data:',
+        'blob:',
+        'https://*.stripe.com',
+        'https://*.mapbox.com',
+        'https://*.cloudflare.com/',
+        'https://bundle.js:*',
+        'ws://localhost:*/',
+      ],
+      'connect-src': [
+        'self',
+        'unsafe-inline',
+        'data:',
+        'blob:',
+        'wss://<HEROKU-SUBDOMAIN>.herokuapp.com:<PORT>/',
+        'https://*.stripe.com',
+        'https://*.mapbox.com',
+        'https://*.cloudflare.com/',
+        'https://bundle.js:*',
+        'ws://localhost:*/',
+      ],
     },
-  }),
-);
+  },
+});
+
 // Development loggin
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
