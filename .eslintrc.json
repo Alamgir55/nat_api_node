@@ -1,9 +1,9 @@
 {
   "extends": ["airbnb", "airbnb-base", "prettier", "plugin:node/recommended"],
-  "env": {
-    "es2020": true
-},
   "plugins": ["prettier"],
+  "parserOptions": {
+    "sourceType": "module"
+  },
   "rules": {
       "prettier/prettier": ["error", {
       "endOfLine":"auto",
